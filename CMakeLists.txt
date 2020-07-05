@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0.2)
 project(path_planning_tutorial)
 
 ## Compile options
-SET(CMAKE_BUILD_TYPE Debug)
-# SET(CMAKE_BUILD_TYPE Release)
+# SET(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_BUILD_TYPE Release)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     ADD_COMPILE_OPTIONS(-std=c++11)
 else()
