@@ -130,8 +130,8 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     // Load parameters
-    std::string MAP_FILENAME = "/home/yskwon/tutorial_ws/src/path_planning_tutorial/map/simple_scene.ot2";
-    // std::string MAP_FILENAME = "/home/yskwon/catkin_ws/src/path_planning_tutorial/map/fr079.ot2";
+    std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/simple_scene.ot2";
+    // std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/fr079.ot2";
 
     AstarPlanningServer astar_planning_server(MAP_FILENAME);
 
