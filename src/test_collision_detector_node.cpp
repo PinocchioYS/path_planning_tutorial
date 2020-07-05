@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     // Load parameters
-    std::string MAP_FILENAME = "/home/user/catkin_ws_ws/src/path_planning_tutorial/map/simple_scene.ot2";
+    std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/simple_scene.ot2";
     // std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/fr079.ot2";
 
     CollisionDetectionServer collision_detection_server(MAP_FILENAME);
