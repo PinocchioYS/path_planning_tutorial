@@ -7,9 +7,18 @@
 #include <path_planning_tutorial/utils.h>
 #include <path_planning_tutorial/visualization.h>
 
+#define USE_OBB_MODEL
+
 class CollisionDetectionServer {
 protected:
+#ifdef USE_OBB_MODEL
+    const double ROBOT_WIDTH  = 0.55;
+    const double ROBOT_HEIGHT = 0.45;
+    const quadmap::point2d robot_size = quadmap::point2d((float)ROBOT_WIDTH, (float)ROBOT_HEIGHT);
+#else
     const double ROBOT_RADIUS = 0.3; // [m]
+    const double robot_size = ROBOT_RADIUS * 2.0;
+#endif
 
 public:
     explicit CollisionDetectionServer(const std::string& _map_filename) {
@@ -30,19 +39,24 @@ public:
     void detect_collision(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& _msg) {
         // Create a new robot model with the given pose
         quadmap::point2d center(_msg->pose.pose.position.x, _msg->pose.pose.position.y);
-        double yaw = utils::get_yaw(_msg->pose.pose.orientation);
-
-        robot_model = Circle(center, (float)robot_size);
         std_msgs::ColorRGBA color;
         color.r = 0.0;  color.g = 1.0;  color.b = 0.0;  color.a = 1.0;
+
+#ifdef USE_OBB_MODEL
+        double yaw = utils::get_yaw(_msg->pose.pose.orientation);
+        robot_model = OBB(center, robot_size, yaw);
+        msg_robot_model = visualization::obb_to_marker(robot_model, color);
+#else
+        robot_model = Circle(center, (float)robot_size * 0.5f);
         msg_robot_model = visualization::circle_to_marker(robot_model, color);
+#endif
 
         bool collision = CollisionChecker::doCollide(map, robot_model);
         if(collision) {
             msg_robot_model->color.r = 1.0;
             msg_robot_model->color.g = 0.0;
         }
-        ROS_INFO("Collision: %s", (collision ? "collision" : "no collision"));
+        ROS_INFO("Result: %s", (collision ? "collision" : "no collision"));
     }
 
     void publish_messages() {
@@ -61,8 +75,11 @@ protected:
     quadmap::QuadTree*          map;
     nav_msgs::OccupancyGridPtr  msg_map;
 
-    Circle       robot_model;
-    const double robot_size = ROBOT_RADIUS;
+#ifdef USE_OBB_MODEL
+    OBB     robot_model;
+#else
+    Circle  robot_model;
+#endif
 
     visualization_msgs::MarkerPtr   msg_robot_model;
 };

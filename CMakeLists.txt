@@ -51,8 +51,10 @@ include_directories(
 SET(COLLISION_DETECTOR_SOURCES
     src/collision_detector/collision_detector.cpp
     include/collision_detector/collision_detector.h
+    include/collision_detector/primitive_aabb.h
     include/collision_detector/primitive_box.h
     include/collision_detector/primitive_circle.h
+    include/collision_detector/primitive_obb.h
 )
 
 SET(ASTAR_PLANNER_2D_CONFIGURATION_SOURCES
@@ -60,6 +62,14 @@ SET(ASTAR_PLANNER_2D_CONFIGURATION_SOURCES
     include/astar_planner/in_2d_configuration_space/astar_planner_2d.h
     include/astar_planner/in_2d_configuration_space/astar_planner_2d_node.h
     include/astar_planner/in_2d_configuration_space/configuration_2d.h
+    ${COLLISION_DETECTOR_SOURCES}
+)
+
+SET(ASTAR_PLANNER_3D_CONFIGURATION_SOURCES
+    src/astar_planner/in_3d_configuration_space/astar_planner_3d.cpp
+    include/astar_planner/in_3d_configuration_space/astar_planner_3d.h
+    include/astar_planner/in_3d_configuration_space/astar_planner_3d_node.h
+    include/astar_planner/in_3d_configuration_space/configuration_3d.h
     ${COLLISION_DETECTOR_SOURCES}
 )
 
@@ -85,6 +95,32 @@ ADD_EXECUTABLE(astar_planner_tutorial_1
     ${ASTAR_PLANNER_2D_CONFIGURATION_SOURCES}
 )
 TARGET_LINK_LIBRARIES(astar_planner_tutorial_1
+    ${catkin_LIBRARIES}
+    ${QUADMAP_LIBRARIES}
+)
+
+ADD_EXECUTABLE(astar_planner_tutorial_2
+    src/astar_planner_tutorial_2.cpp
+
+    include/path_planning_tutorial/utils.h
+    include/path_planning_tutorial/visualization.h
+
+    ${ASTAR_PLANNER_3D_CONFIGURATION_SOURCES}
+)
+TARGET_LINK_LIBRARIES(astar_planner_tutorial_2
+    ${catkin_LIBRARIES}
+    ${QUADMAP_LIBRARIES}
+)
+
+ADD_EXECUTABLE(astar_planner_tutorial_3
+    src/astar_planner_tutorial_3.cpp
+
+    include/path_planning_tutorial/utils.h
+    include/path_planning_tutorial/visualization.h
+
+    ${ASTAR_PLANNER_3D_CONFIGURATION_SOURCES}
+)
+TARGET_LINK_LIBRARIES(astar_planner_tutorial_3
     ${catkin_LIBRARIES}
     ${QUADMAP_LIBRARIES}
 )

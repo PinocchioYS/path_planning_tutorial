@@ -4,7 +4,9 @@
 #include <quadmap/QuadTree.h>
 
 #include <astar_planner/in_2d_configuration_space/configuration_2d.h>
+#include <astar_planner/in_3d_configuration_space/configuration_3d.h>
 #include <collision_detector/primitive_circle.h>
+#include <collision_detector/primitive_obb.h>
 
 #include <visualization_msgs/MarkerArray.h>
 #include <nav_msgs/OccupancyGrid.h>
@@ -98,6 +100,85 @@ namespace visualization {
         return message;
     }
 
+
+    /*
+     * This function generates a visualization message for an oriented bounding box.
+     */
+    visualization_msgs::MarkerPtr obb_to_marker(const OBB& _obb, std_msgs::ColorRGBA& _color,
+                                                const std::string& _FIXED_FRAME_ID = "map",
+                                                const ros::Time& _time = ros::Time::now(),
+                                                const int& _id = 0) {
+        visualization_msgs::MarkerPtr message(new visualization_msgs::Marker);
+        // Message header
+        message->header.frame_id = _FIXED_FRAME_ID;
+        message->header.stamp = _time;
+
+        message->id = _id;
+        message->type = visualization_msgs::Marker::CUBE;
+        message->action = visualization_msgs::Marker::ADD;
+
+        message->scale.x = _obb.length.x();
+        message->scale.y = _obb.length.y();
+        message->scale.z = VIS_HEIGHT_MARKER;
+
+        message->color = _color;
+
+        message->pose.position.x = _obb.center.x();
+        message->pose.position.y = _obb.center.y();
+        message->pose.position.z = VIS_HEIGHT_MARKER * 0.5;
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, _obb.rotation);
+        message->pose.orientation.x = q.x();    message->pose.orientation.y = q.y();    message->pose.orientation.z = q.z();    message->pose.orientation.w = q.w();
+
+        return message;
+    }
+
+
+
+    /*
+     *
+     */
+    visualization_msgs::MarkerPtr heading_angle_to_marker(const OBB& _obb,
+                                                          const std::string& _FIXED_FRAME_ID = "map",
+                                                          const ros::Time& _time = ros::Time::now(),
+                                                          const int& _id = 0) {
+        visualization_msgs::MarkerPtr message(new visualization_msgs::Marker);
+        // Message header
+        message->header.frame_id = _FIXED_FRAME_ID;
+        message->header.stamp = _time;
+
+        message->id = _id;
+        message->type = visualization_msgs::Marker::ARROW;
+        message->action = visualization_msgs::Marker::ADD;
+
+        message->scale.x = 0.05;
+        message->scale.y = 0.1;
+        message->scale.z = 0.05;
+
+        message->color.r = 1.0;
+        message->color.g = 1.0;
+        message->color.b = 1.0;
+        message->color.a = 0.85;
+
+        message->pose.position.x = 0.0;     message->pose.position.y = 0.0;     message->pose.position.z = 0.0;
+        message->pose.orientation.x = 0.0;  message->pose.orientation.y = 0.0;  message->pose.orientation.z = 0.0;  message->pose.orientation.w = 1.0;
+
+        geometry_msgs::Point start_point;
+        start_point.x = _obb.center.x();
+        start_point.y = _obb.center.y();
+        start_point.z = VIS_HEIGHT_MARKER;
+        message->points.push_back(start_point);
+
+        geometry_msgs::Point end_point;
+        end_point.x = _obb.center.x() + _obb.axis[0].x() * _obb.length.x() * 0.5;
+        end_point.y = _obb.center.y() + _obb.axis[0].y() * _obb.length.x() * 0.5;
+        end_point.z = VIS_HEIGHT_MARKER;
+        message->points.push_back(end_point);
+
+        return message;
+    }
+
     /*
      *
      */
@@ -136,7 +217,87 @@ namespace visualization {
     /*
      *
      */
+    visualization_msgs::MarkerArrayPtr path_to_markerarray(const std::vector<Configuration3D>& _path, const quadmap::point2d& _robot_size,
+                                                           const std::string& _FIXED_FRAME_ID = "map",
+                                                           const ros::Time& _time = ros::Time::now()) {
+        if(_path.empty())
+            return nullptr;
+
+        visualization_msgs::MarkerArrayPtr message(new visualization_msgs::MarkerArray);
+        message->markers.resize(MAX_NUM_OF_MARKERS * 2);
+
+        int path_idx = 0;
+        int path_idx_step = ((int)(_path.size() - 1) / MAX_NUM_OF_MARKERS) + 1;
+        for(int i = 0; i < MAX_NUM_OF_MARKERS; i++) {
+            if(path_idx < _path.size()) {
+                double v = std::min(std::max(0.0, (double)path_idx / _path.size()), 1.0);
+                std_msgs::ColorRGBA color;
+                color.r = 0.0;  color.g = v;    color.b = (1.0-v);  color.a = 1.0;
+
+                OBB robot_model(quadmap::point2d(_path[path_idx].x(), _path[path_idx].y()), _robot_size, _path[path_idx].r());
+
+                message->markers[i] = *(obb_to_marker(robot_model, color, _FIXED_FRAME_ID, _time, i));
+
+                std_msgs::ColorRGBA head_dir_color;
+                message->markers[MAX_NUM_OF_MARKERS + i] = *(heading_angle_to_marker(robot_model, _FIXED_FRAME_ID, _time, MAX_NUM_OF_MARKERS+i));
+            }
+            else {
+                message->markers[i].id = i;
+                message->markers[i].action = visualization_msgs::Marker::DELETE;
+                message->markers[MAX_NUM_OF_MARKERS+i].id = MAX_NUM_OF_MARKERS + i;
+                message->markers[MAX_NUM_OF_MARKERS+i].action = visualization_msgs::Marker::DELETE;
+            }
+
+            path_idx += path_idx_step;
+        }
+
+        return message;
+    }
+
+    /*
+     *
+     */
     visualization_msgs::MarkerPtr path_to_marker(const std::vector<Configuration2D>& _path,
+                                                 const std::string& _FIXED_FRAME_ID = "map",
+                                                 const ros::Time& _time = ros::Time::now()) {
+        if(_path.empty())
+            return nullptr;
+
+        visualization_msgs::MarkerPtr message(new visualization_msgs::Marker);
+
+        // Message header
+        message->header.frame_id = _FIXED_FRAME_ID;
+        message->header.stamp = _time;
+
+        message->id = 0;
+        message->type = visualization_msgs::Marker::LINE_STRIP;
+        message->action = visualization_msgs::Marker::ADD;
+
+        message->scale.x = 0.01;
+
+        message->color.r = 1.0;
+        message->color.g = 0.0;
+        message->color.b = 0.0;
+        message->color.a = 1.0;
+
+        message->pose.position.x = 0.0;      message->pose.position.y = 0.0;      message->pose.position.z = 0.0;
+        message->pose.orientation.x = 0.0;   message->pose.orientation.y = 0.0;   message->pose.orientation.z = 0.0;   message->pose.orientation.w = 1.0;
+
+        for(const auto& conf : _path) {
+            geometry_msgs::Point point;
+            point.x = conf.x();
+            point.y = conf.y();
+            point.z = VIS_HEIGHT_MARKER;
+            message->points.push_back(point);
+        }
+
+        return message;
+    }
+
+    /*
+     *
+     */
+    visualization_msgs::MarkerPtr path_to_marker(const std::vector<Configuration3D>& _path,
                                                  const std::string& _FIXED_FRAME_ID = "map",
                                                  const ros::Time& _time = ros::Time::now()) {
         if(_path.empty())

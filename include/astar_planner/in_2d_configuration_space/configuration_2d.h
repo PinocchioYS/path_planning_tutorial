@@ -54,10 +54,6 @@ struct Configuration2D {
         return operator()(1);
     }
 
-    double distanceTo(const Configuration2D& _other) const {
-        return std::sqrt(std::pow(this->x() - _other.x(), 2) + std::pow(this->y() - _other.y(), 2));
-    }
-
     float data[2];
 };
 

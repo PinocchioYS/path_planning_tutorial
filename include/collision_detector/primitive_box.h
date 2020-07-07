@@ -1,5 +1,5 @@
-#ifndef HUBO_PLANNER_PRIMITIVE_BOX_H
-#define HUBO_PLANNER_PRIMITIVE_BOX_H
+#ifndef PATH_PLANNING_TUTORIAL_PRIMITIVE_BOX_H
+#define PATH_PLANNING_TUTORIAL_PRIMITIVE_BOX_H
 
 #include <quadmap/quadmap.h>
 
@@ -23,4 +23,4 @@ struct Box {
     float            size;
 };
 
-#endif //HUBO_PLANNER_PRIMITIVE_BOX_H
+#endif //PATH_PLANNING_TUTORIAL_PRIMITIVE_BOX_H

@@ -39,6 +39,34 @@ namespace utils {
         double m2 = 1.0 - 2.0 * (_q.y() * _q.y() + _q.z() * _q.z());
         return std::atan2(m1, m2);
     }
+
+    /*
+     *
+     */
+    geometry_msgs::PoseStampedPtr next_pose_to_pose_stamped(const std::vector<Configuration3D>& _path,
+                                                            const std::string& _FIXED_FRAME_ID = "map",
+                                                            const ros::Time& _time = ros::Time::now()) {
+        if(_path.empty())
+            return nullptr;
+
+        geometry_msgs::PoseStampedPtr message(new geometry_msgs::PoseStamped);
+
+        message->header.frame_id = _FIXED_FRAME_ID;
+        message->header.stamp = _time;
+
+        int next_pose_idx = std::max((int)0, (int)(_path.size() - 3));
+        message->pose.position.x = _path[next_pose_idx].x();
+        message->pose.position.y = _path[next_pose_idx].y();
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, _path[next_pose_idx].r());
+        message->pose.orientation.x = q.x();
+        message->pose.orientation.y = q.y();
+        message->pose.orientation.z = q.z();
+        message->pose.orientation.w = q.w();
+
+        return message;
+    }
 }
 
 
