@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
     // Load parameters
     std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/simple_scene.ot2";
-    // std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/quadtree.ot2";
+    // std::string MAP_FILENAME = "/home/user/catkin_ws/src/path_planning_tutorial/map/fr079.ot2";
 
     AstarPlanningServer astar_planning_server(MAP_FILENAME);
 
