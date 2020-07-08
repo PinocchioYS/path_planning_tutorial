@@ -3,6 +3,7 @@
 
 #include <quadmap/QuadTree.h>
 
+#include <astar_planner/in_3d_configuration_space/configuration_3d.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <tf/tf.h>
